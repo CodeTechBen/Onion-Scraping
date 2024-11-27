@@ -1,8 +1,10 @@
 """A script that scrapes data from the onion website"""
 
 from datetime import datetime
+import json
 import requests as req
 from bs4 import BeautifulSoup
+from time import sleep
 
 def get_article_details(url:str) -> dict:
     """returns a dict of onion article data"""
@@ -17,7 +19,8 @@ def get_article_details(url:str) -> dict:
     tags = tag_holder.find_all("a") if tag_holder else []
 
     return {"title": onion_soup.find("h1").get_text(),
-            "published": datetime.fromisoformat(onion_soup.find("time")["datetime"]),
+            "published": onion_soup.find("time")["datetime"],
+            # datetime.fromisoformat(onion_soup.find("time")["datetime"]),
             "tags": [tag.get_text() for tag in tags]
         }
 
@@ -34,10 +37,16 @@ def get_articles_from_page(url:str) -> list[dict]:
 
     articles = []
     for l in links:
+        sleep(1)
         articles.append(get_article_details(l.find("a")["href"]))
     return articles
 
 
 if __name__ == "__main__":
     # print(get_article_details("https://theonion.com/report-most-americans-have-enough-saved-for-absolutely-incredible-single-day-of-retirement/"))
-    print(get_articles_from_page('https://theonion.com/news/page/840/'))
+    all_articles = []
+    for i in range(1, 3):
+        all_articles.extend(get_articles_from_page(f'https://theonion.com/news/page/{i}/'))
+    
+    with open("onion_articles.json", "w") as f:
+        json.dump(all_articles, f, indent=4)
