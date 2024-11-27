@@ -5,6 +5,7 @@ import json
 import requests as req
 from bs4 import BeautifulSoup
 from time import sleep
+from rich.progress import Progress
 
 def get_article_details(url:str) -> dict:
     """returns a dict of onion article data"""
@@ -43,10 +44,15 @@ def get_articles_from_page(url:str) -> list[dict]:
 
 
 if __name__ == "__main__":
-    # print(get_article_details("https://theonion.com/report-most-americans-have-enough-saved-for-absolutely-incredible-single-day-of-retirement/"))
     all_articles = []
-    for i in range(1, 3):
-        all_articles.extend(get_articles_from_page(f'https://theonion.com/news/page/{i}/'))
-    
+    with Progress() as progress:
+        task = progress.add_task("[cyan]Scraping articles...", total=9 * 12)
+
+        for i in range(1, 10):
+            page_articles = get_articles_from_page(
+                f'https://theonion.com/news/page/{i}/')
+            all_articles.extend(page_articles)
+            progress.update(task, advance=len(page_articles))
+
     with open("onion_articles.json", "w") as f:
         json.dump(all_articles, f, indent=4)
