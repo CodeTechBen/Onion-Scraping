@@ -1,0 +1,6 @@
+pytest
+bs4
+requests
+flask
+pylint
+psycopg2
